@@ -4,6 +4,7 @@ RUN apt-get update
 
 RUN apt-get install -y libpq-dev libpng-dev curl nano unzip zip git jq supervisor
 
+#RUN docker-php-ext-install pdo_mysql
 RUN docker-php-ext-install pdo_pgsql
 
 #RUN pecl install -o -f redis opcache
