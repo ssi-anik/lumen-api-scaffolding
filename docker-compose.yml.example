@@ -48,6 +48,16 @@ services:
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=secret
             - POSTGRES_DB=app-backend
+
+    mysql:
+        image: mysql:8
+        ports:
+            - 3306:3306
+        volumes:
+            - ~/.backup/mysql/application-name:/var/lib/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_DATABASE: app-backend
     
     redis:
         image: redis:5.0.5
