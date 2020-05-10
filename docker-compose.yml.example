@@ -1,0 +1,71 @@
+version: '2'
+
+services:
+    nginx:
+        image: nginx:1.13.6
+        ports:
+            - 80:80
+        volumes:
+            - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+        volumes_from:
+            - php
+    
+    php:
+        build:
+            context: .
+            dockerfile: ./docker/php/Dockerfile
+            args:
+                ENVIRONMENT: dev
+                VERSION: 9.7.0.258
+                NR_LICENSE_KEY: ''
+        expose:
+            - 9000
+        volumes:
+            - .:/var/www/html
+        links:
+            - redis
+            - postgres
+            - beanstalkd
+    
+    worker:
+        build:
+            context: ./docker/php
+            dockerfile: worker.dockerfile
+        volumes:
+            - .:/var/www/html
+        links:
+            - redis
+            - postgres
+            - beanstalkd
+    
+    postgres:
+        image: postgres:10.4-alpine
+        ports:
+            - 5432:5432
+        volumes:
+            - ~/.backup/postgres/application-name:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=secret
+            - POSTGRES_DB=app-backend
+    
+    redis:
+        image: redis:5.0.5
+        ports:
+            - 6379:6379
+        volumes:
+            - ~/.backup/redis/application-name:/data
+    
+    beanstalkd:
+        build: ./docker/beanstalkd
+        ports:
+            - 11300:11300
+        volumes:
+            - ~/.backup/beanstalkd/application-name:/binlog
+    
+    beanstalk-console:
+        image: sirajul/beanstalk-console
+        ports:
+            - 9000:80
+        links:
+            - beanstalkd
